@@ -216,7 +216,7 @@
   .blush.left  { left: 14px; }
   .blush.right { right: 14px; }
 
-  /* ---------------- КОРОТКАЯ ПРИЧЁСКА (простая, в едином стиле) ---------------- */
+  /* ---------------- КОРОТКАЯ ПРИЧЁСКА ---------------- */
   .hair {
     position: absolute;
     top: 22px;
@@ -234,7 +234,6 @@
     50%      { transform: translateX(-50%) rotate(0.3deg); }
   }
 
-  /* Основная шапка волос — короткая, с объёмом сверху, бока короткие (уши открыты) */
   .hair .main {
     position: absolute;
     top: 0;
@@ -250,7 +249,6 @@
       inset 6px 8px 14px rgba(255,200,140,.12),
       0 6px 16px rgba(0,0,0,.45);
   }
-
 
   /* ---------------- ТУЛОВИЩЕ ---------------- */
   .torso-wrapper {
@@ -425,6 +423,58 @@
     border-radius: 3px;
   }
 
+  /* ---------------- ТАБЛИЧКА С ПОЗДРАВЛЕНИЕМ ---------------- */
+  .greeting {
+    position: absolute;
+    left: 50%;
+    bottom: 110px;
+    transform: translateX(-50%) translateY(30px) scale(0.5);
+    opacity: 0;
+    z-index: 30;
+    width: 250px;
+    padding: 12px 16px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,200,140,.25), transparent 60%),
+      linear-gradient(145deg, #3a2a12 0%, #5a3f1f 50%, #2b1d0a 100%);
+    border: 2px solid #d4a15a;
+    border-radius: 14px;
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.6),
+      inset 0 0 20px rgba(255,200,140,.15),
+      0 0 30px rgba(212,161,90,.35);
+    color: #ffe8c2;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    line-height: 1.35;
+    pointer-events: none;
+    transition: opacity .8s ease, transform 1s cubic-bezier(.2,.9,.3,1.3);
+  }
+
+  .greeting::before,
+  .greeting::after {
+    content: '🎓';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  }
+  .greeting::before { left: 8px; }
+  .greeting::after  { right: 8px; }
+
+  .greeting.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    animation: greetingSway 3.5s ease-in-out infinite 1s;
+  }
+
+  @keyframes greetingSway {
+    0%, 100% { transform: translateX(-50%) translateY(0) scale(1) rotate(-0.6deg); }
+    50%      { transform: translateX(-50%) translateY(0) scale(1) rotate(0.6deg); }
+  }
+
   /* ---------------- СЕРДЦЕ ---------------- */
   .heart {
     position: absolute;
@@ -475,73 +525,9 @@
     60%      { transform: scale(1); }
   }
 
-  /* ---------------- КНОПКИ ---------------- */
+  /* ---------------- КНОПКИ (СКРЫТЫ) ---------------- */
   .controls {
-    position: fixed;
-    bottom: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  button {
-    padding: 11px 18px;
-    border: none;
-    border-radius: 40px;
-    font-size: 13.5px;
-    font-weight: 600;
-    letter-spacing: .4px;
-    color: #fff;
-    cursor: pointer;
-    background: linear-gradient(145deg, #2e3a5c, #1b2340);
-    box-shadow: 0 6px 18px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.08);
-    transition: transform .18s ease, box-shadow .25s ease, background .3s ease, opacity .3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  button:hover:not(:disabled) {
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 10px 24px rgba(90,169,230,.45), inset 0 0 0 1px rgba(255,255,255,.15);
-  }
-
-  button:active:not(:disabled) {
-    transform: translateY(0) scale(.97);
-  }
-
-  button:disabled {
-    opacity: .28;
-    cursor: not-allowed;
-    filter: grayscale(.7);
-  }
-
-  button[data-action="head"]  { background: linear-gradient(145deg, #8a5a2f, #5a3a1a); }
-  button[data-action="hair"]  { background: linear-gradient(145deg, #6b4423, #3b2416); }
-  button[data-action="arms"]  { background: linear-gradient(145deg, #3f7fb8, #2b6cb0); }
-  button[data-action="legs"]  { background: linear-gradient(145deg, #2b4a7a, #16253f); }
-  button[data-action="torso"] { background: linear-gradient(145deg, #3f7fb8, #1f4e79); }
-
-  button[data-return] { background: linear-gradient(145deg, #3f8a4f, #1f5a2c); }
-
-  button#btnRestoreAll {
-    background: linear-gradient(145deg, #d18b3f, #8a5a1a);
-    box-shadow: 0 6px 18px rgba(209,139,63,.4), inset 0 0 0 1px rgba(255,255,255,.15);
-    padding: 13px 26px;
-    font-size: 14.5px;
-  }
-
-  button#btnRestoreAll:hover:not(:disabled) {
-    box-shadow: 0 10px 26px rgba(209,139,63,.6), inset 0 0 0 1px rgba(255,255,255,.2);
+    display: none;
   }
 
   .hint {
@@ -553,12 +539,19 @@
     opacity: .55;
     letter-spacing: 1px;
     text-transform: uppercase;
+    text-align: center;
+  }
+
+  .hint small {
+    display: block;
+    font-size: 11px;
+    opacity: .8;
+    margin-top: 4px;
+    letter-spacing: .5px;
   }
 </style>
 </head>
 <body>
-
-<div class="hint">Собери и разбери человечка 💙</div>
 
 <div class="stage">
   <div class="person" id="person">
@@ -566,7 +559,6 @@
     <div class="head-wrapper" id="headWrapper">
       <div class="neck" id="neck"></div>
 
-      <!-- КОРОТКАЯ ПРИЧЁСКА: объём сверху, короткие бока -->
       <div class="hair part" id="hair">
         <div class="main"></div>
         <div class="top-lock"></div>
@@ -638,6 +630,10 @@
       </div>
     </div>
 
+    <div class="greeting" id="greeting">
+      🎓 С профессиональным праздником,<br>уважаемые преподаватели! 🎓
+    </div>
+
   </div>
 
   <div class="heart" id="heart">
@@ -661,26 +657,6 @@
   </div>
 </div>
 
-<div class="controls">
-  <div class="row">
-    <button data-action="head">🙂 Убрать голову</button>
-    <button data-action="hair">✨ Убрать волосы</button>
-    <button data-action="arms">💪 Убрать руки</button>
-    <button data-action="legs">🦵 Убрать ноги</button>
-    <button data-action="torso">👕 Убрать туловище</button>
-  </div>
-  <div class="row">
-    <button data-return="head"  disabled>↩ Вернуть голову</button>
-    <button data-return="hair"  disabled>↩ Вернуть волосы</button>
-    <button data-return="arms"  disabled>↩ Вернуть руки</button>
-    <button data-return="legs"  disabled>↩ Вернуть ноги</button>
-    <button data-return="torso" disabled>↩ Вернуть туловище</button>
-  </div>
-  <div class="row">
-    <button id="btnRestoreAll">🔄 Восстановить всё медленно (с ног)</button>
-  </div>
-</div>
-
 <script>
   const removed = { head:false, hair:false, arms:false, legs:false, torso:false };
 
@@ -693,82 +669,92 @@
     torso: [document.getElementById('torso')],
   };
 
-  const removeButtons  = document.querySelectorAll('button[data-action]');
-  const returnButtons  = document.querySelectorAll('button[data-return]');
-  const btnRestoreAll  = document.getElementById('btnRestoreAll');
-  const heart          = document.getElementById('heart');
+  const heart    = document.getElementById('heart');
+  const greeting = document.getElementById('greeting');
 
   let restoreInProgress = false;
 
-  removeButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (restoreInProgress) return;
-      const action = btn.dataset.action;
-      if (removed[action]) return;
-
-      els[action].forEach((el, i) => {
-        setTimeout(() => {
-          el.classList.remove('returning');
-          el.classList.add('hidden-part');
-        }, i * 90);
-      });
-
-      if (action === 'head') {
-        setTimeout(() => {
-          els.neck[0].classList.remove('returning');
-          els.neck[0].classList.add('hidden-neck');
-        }, 150);
-      }
-
-      removed[action] = true;
-      updateButtons();
-      hideHeartIfNeeded();
-    });
-  });
-
-  returnButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (restoreInProgress) return;
-      const action = btn.dataset.return;
-      if (!removed[action]) return;
-      animateReturn(action, 0);
-      removed[action] = false;
-      updateButtons();
-      hideHeartIfNeeded();
-    });
-  });
-
-  btnRestoreAll.addEventListener('click', () => {
+  /* ---------- УБРАТЬ ---------- */
+  function removePart(action) {
     if (restoreInProgress) return;
+    if (removed[action]) return;
 
-    const anyRemoved = Object.values(removed).some(v => v === true);
-    if (!anyRemoved) return;
+    hideGreeting();
 
-    restoreInProgress = true;
-    updateButtons();
-
-    const order = ['legs', 'torso', 'arms', 'hair', 'head'];
-    const STEP = 900;
-
-    order.forEach((action, idx) => {
-      if (!removed[action]) return;
-
+    els[action].forEach((el, i) => {
       setTimeout(() => {
-        animateReturn(action, 0);
-        removed[action] = false;
-        updateButtons();
-        hideHeartIfNeeded();
-
-        if (idx === order.length - 1) {
-          setTimeout(() => {
-            restoreInProgress = false;
-            updateButtons();
-          }, 1000);
-        }
-      }, idx * STEP);
+        el.classList.remove('returning');
+        el.classList.add('hidden-part');
+      }, i * 90);
     });
+
+    if (action === 'head') {
+      setTimeout(() => {
+        els.neck[0].classList.remove('returning');
+        els.neck[0].classList.add('hidden-neck');
+      }, 150);
+    }
+
+    removed[action] = true;
+    hideHeartIfNeeded();
+  }
+
+  /* ---------- ВЕРНУТЬ ---------- */
+  function returnPart(action) {
+    if (restoreInProgress) return;
+    if (!removed[action]) return;
+    animateReturn(action, 0);
+    removed[action] = false;
+    hideHeartIfNeeded();
+    checkAllAssembled();
+  }
+
+  /* ---------- ПЕРЕКЛЮЧАТЕЛЬ ---------- */
+  function togglePart(action) {
+    if (removed[action]) {
+      returnPart(action);
+    } else {
+      removePart(action);
+    }
+  }
+
+  /* ---------- ПОЛНОЭКРАННЫЙ РЕЖИМ ---------- */
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  /* ---------- КЛАВИАТУРА ---------- */
+  const keyMap = { '1':'hair', '2':'head', '3':'arms', '4':'legs', '5':'torso' };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+    // Полноэкранный режим по клавише I (русская Ш)
+    if (e.key === 'i' || e.key === 'I' || e.key === 'ш' || e.key === 'Ш' || e.code === 'KeyI') {
+      e.preventDefault();
+      toggleFullscreen();
+      return;
+    }
+
+    let action = null;
+    if (keyMap[e.key]) action = keyMap[e.key];
+    else if (e.code === 'Numpad1') action = 'hair';
+    else if (e.code === 'Numpad2') action = 'head';
+    else if (e.code === 'Numpad3') action = 'arms';
+    else if (e.code === 'Numpad4') action = 'legs';
+    else if (e.code === 'Numpad5') action = 'torso';
+
+    if (action) {
+      e.preventDefault();
+      togglePart(action);
+    }
   });
 
+  /* ---------- Анимация возврата ---------- */
   function animateReturn(action, baseDelay) {
     els[action].forEach((el, i) => {
       setTimeout(() => {
@@ -792,17 +778,17 @@
     }
   }
 
-  function updateButtons() {
-    removeButtons.forEach(btn => {
-      btn.disabled = restoreInProgress || removed[btn.dataset.action];
-    });
-    returnButtons.forEach(btn => {
-      btn.disabled = restoreInProgress || !removed[btn.dataset.return];
-    });
-    const anyRemoved = Object.values(removed).some(v => v === true);
-    btnRestoreAll.disabled = restoreInProgress || !anyRemoved;
+  /* ---------- Проверка: собран ли человечек полностью ---------- */
+  function checkAllAssembled() {
+    const allThere = Object.values(removed).every(v => v === false);
+    if (allThere) {
+      setTimeout(() => {
+        showGreeting();
+      }, 900);
+    }
   }
 
+  /* ---------- Сердце ---------- */
   function hideHeartIfNeeded() {
     const anyReturned = Object.values(removed).some(v => v === false);
     if (anyReturned && heart.classList.contains('show')) {
@@ -822,7 +808,16 @@
     }
   }
 
-  updateButtons();
+  /* ---------- Табличка ---------- */
+  function showGreeting() {
+    greeting.classList.remove('show');
+    void greeting.offsetWidth;
+    setTimeout(() => greeting.classList.add('show'), 200);
+  }
+
+  function hideGreeting() {
+    greeting.classList.remove('show');
+  }
 </script>
 
 </body>
