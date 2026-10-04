@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Анимированный человечек</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at 50% 40%, #1b2340, #05070f 70%);
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+    color: #fff;
+  }
+
+  /* ============================================================
+     ЗАСТАВКА «В ЭФИРЕ / А ВЫ ЗНАЛИ, ЧТО»
+     ============================================================ */
+  .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 24px;
+    background:
+      radial-gradient(circle at 50% 45%, rgba(90, 60, 180, .35), transparent 60%),
+      radial-gradient(circle at 50% 40%, #1b2340, #05070f 70%);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity .8s ease, transform .8s ease, filter .8s ease;
+  }
+
+  .intro.hide {
+    opacity: 0;
+    transform: scale(1.08);
+    filter: blur(14px);
+    pointer-events: none;
+  }
+
+  /* ============================================================
+     ПЕРЕЛИВАЮЩИЙСЯ ТЕКСТ
+     — блик идёт СПРАВА НАЛЕВО
+     — фон-градиент продублирован, цикл бесшовный
+     ============================================================ */
+  .shine-text {
+    background-image: linear-gradient(
+      100deg,
+      #ffffff 0%,
+      #ffe9b0 8%,
+      #ffd166 16%,
+      #ff9ec4 25%,
+      #8fd9ff 33%,
+      #ffe9b0 41%,
+      #ffffff 50%,
+      #ffe9b0 58%,
+      #ffd166 66%,
+      #ff9ec4 75%,
+      #8fd9ff 83%,
+      #ffe9b0 91%,
+      #ffffff 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+
+    /* справа налево */
+    animation: shineText 6s linear infinite;
+    will-change: background-position;
+  }
+
+  @keyframes shineText {
+    0%   { background-position: 100% 50%; }
+    100% { background-position:   0% 50%; }
+  }
+
+  /* ——— Верхняя строка «В эфире» ——— */
+  .intro__label {
+    font-size: clamp(18px, 3vw, 26px);
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    opacity: 0;
+    text-shadow: 0 0 22px rgba(255, 209, 102, .35);
+    animation:
+      introLabel .9s ease .15s forwards,
+      shineText 6s linear infinite .9s;
+  }
+
+  /* ——— Заголовок «А вы знали, что» ——— */
+  .intro__title {
+    margin-top: 14px;
+    font-size: clamp(34px, 7vw, 72px);
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.1;
+    opacity: 0;
+    transform: translateY(24px) scale(.9);
+    filter: drop-shadow(0 8px 30px rgba(255, 120, 180, .35));
+    animation:
+      introTitle 1.05s cubic-bezier(.2,.9,.3,1.3) .35s forwards,
+      shineText 6s linear infinite .9s;
+  }
+
+  /* ——— Кругляшок-пульс (прежний) ——— */
+  .intro__pulse {
+    margin-top: 40px;
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 209, 102, .55);
+    position: relative;
+    opacity: 0;
+    animation: introPulse .9s ease 1s forwards;
+  }
+  .intro__pulse::before,
+  .intro__pulse::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 209, 102, .35);
+    animation: pulseRing 2.2s ease-out infinite;
+  }
+  .intro__pulse::after { animation-delay: 1.1s; }
+
+  @keyframes introLabel {
+    from { opacity: 0; transform: translateY(-14px); letter-spacing: .6em; }
+    to   { opacity: 1; transform: translateY(0);     letter-spacing: .35em; }
+  }
+  @keyframes introTitle {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes introPulse {
+    to { opacity: 1; }
+  }
+  @keyframes pulseRing {
+    0%   { transform: scale(.9); opacity: .55; }
+    100% { transform: scale(1.8); opacity: 0; }
+  }
+
+  /* ============================================================
+     ОСНОВНАЯ СЦЕНА
+     ============================================================ */
+  .stage {
+    position: relative;
+    width: 400px;
+    height: 520px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .person {
+    position: relative;
+    width: 260px;
+    height: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: appear 1.1s cubic-bezier(.2,.9,.3,1.3) both;
+  }
+
+  @keyframes appear {
+    0%   { transform: translateY(60px) scale(.3); opacity: 0; filter: blur(8px); }
+    60%  { transform: translateY(-10px) scale(1.05); opacity: 1; filter: blur(0); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .part {
+    transition: all 0.9s cubic-bezier(.65,-0.3,.3,1.4), opacity 0.7s ease;
+    position: relative;
+  }
+
+  .hidden-part {
+    opacity: 0 !important;
+    transform: scale(0.2) rotate(40deg) translateY(-40px) !important;
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .neck.hidden-neck {
+    opacity: 0 !important;
+    transform: translateX(-50%) scale(0.8) translateY(10px) !important;
+    filter: blur(4px);
+    pointer-events: none;
+  }
+
+  .returning {
+    animation: returnPart 0.9s cubic-bezier(.2,.9,.3,1.4) both;
+  }
+
+  @keyframes returnPart {
+    0%   { opacity: 0; transform: scale(0.2) rotate(-40deg) translateY(-60px); filter: blur(10px); }
+    60%  { opacity: 1; transform: scale(1.12) rotate(4deg) translateY(6px);  filter: blur(0); }
+    100% { opacity: 1; transform: scale(1) rotate(0) translateY(0); }
+  }
+
+  /* ---------------- ШЕЯ ---------------- */
+  .neck {
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 30px;
+    background: linear-gradient(180deg, #f0b98c, #d99868);
+    border-radius: 6px 6px 10px 10px;
+    z-index: 1;
+    box-shadow: inset -4px 0 8px rgba(0,0,0,.2);
+    transition: all 0.9s cubic-bezier(.65,-0.3,.3,1.4), opacity 0.7s ease;
+  }
+
+  /* ---------------- ГОЛОВА ---------------- */
+  .head-wrapper {
+    position: relative;
+    width: 130px;
+    height: 155px;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+  }
+
+  .head {
+    width: 112px;
+    height: 124px;
+    background:
+      radial-gradient(circle at 30% 25%, #ffe6cc 0%, transparent 40%),
+      linear-gradient(160deg, #ffd9b3, #e8a97e);
+    border-radius: 50% 50% 46% 46% / 52% 52% 48% 48%;
+    box-shadow:
+      inset -10px -12px 22px rgba(180,110,60,.35),
+      inset 6px 6px 12px rgba(255,240,220,.4),
+      0 8px 22px rgba(0,0,0,.45);
+    position: relative;
+    top: 22px;
+    z-index: 3;
+  }
+
+  .ear {
+    position: absolute;
+    width: 18px;
+    height: 24px;
+    background: radial-gradient(circle at 40% 40%, #ffd9b3, #e0a577);
+    border-radius: 50%;
+    top: 58px;
+    box-shadow: inset -3px -3px 6px rgba(0,0,0,.2);
+    z-index: 2;
+  }
+  .ear.left  { left: -8px; }
+  .ear.right { right: -8px; }
+  .ear::after {
+    content: '';
+    position: absolute;
+    top: 6px; left: 50%;
+    transform: translateX(-50%);
+    width: 8px; height: 12px;
+    background: rgba(180,110,80,.35);
+    border-radius: 50%;
+    filter: blur(1px);
+  }
+
+  .brow {
+    position: absolute;
+    width: 20px;
+    height: 5px;
+    background: #3b2416;
+    border-radius: 4px;
+    top: 40px;
+    z-index: 4;
+    box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  }
+  .brow.left  { left: 22px;  transform: rotate(-8deg); }
+  .brow.right { right: 22px; transform: rotate(8deg); }
+
+  .eye {
+    position: absolute;
+    width: 15px;
+    height: 17px;
+    background: radial-gradient(circle at 40% 35%, #444, #111 70%);
+    border-radius: 50%;
+    top: 50px;
+    animation: blink 4s infinite;
+    z-index: 4;
+    box-shadow: inset 0 -2px 3px rgba(255,255,255,.15);
+  }
+  .eye.left  { left: 22px; }
+  .eye.right { right: 22px; }
+
+  .eye::after {
+    content:'';
+    position: absolute;
+    width: 5px; height: 5px;
+    background:#fff;
+    border-radius:50%;
+    top: 3px; left: 3px;
+    box-shadow: 0 0 3px rgba(255,255,255,.9);
+  }
+
+  @keyframes blink {
+    0%, 92%, 100% { transform: scaleY(1); }
+    95% { transform: scaleY(0.1); }
+  }
+
+  .nose {
+    position: absolute;
+    width: 10px;
+    height: 12px;
+    background: radial-gradient(circle at 40% 30%, #f0b98c, #d18a5a);
+    border-radius: 50% 50% 55% 55%;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,.15);
+  }
+
+  .mouth {
+    position: absolute;
+    width: 34px;
+    height: 16px;
+    border-bottom: 4px solid #b4604a;
+    border-radius: 0 0 40px 40px;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,.2));
+  }
+
+  .blush {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(ellipse, rgba(255,120,140,.55), transparent 70%);
+    border-radius: 50%;
+    bottom: 34px;
+    z-index: 4;
+    filter: blur(1px);
+  }
+  .blush.left  { left: 14px; }
+  .blush.right { right: 14px; }
+
+  /* ---------------- КОРОТКАЯ ПРИЧЁСКА ---------------- */
+  .hair {
+    position: absolute;
+    top: 22px;
+    left: 61%;
+    transform: translateX(-50%);
+    width: 138px;
+    height: 100px;
+    z-index: 4;
+    transform-origin: top center;
+    animation: hairSway 4.5s ease-in-out infinite;
+  }
+
+  @keyframes hairSway {
+    0%, 100% { transform: translateX(-50%) rotate(-0.3deg); }
+    50%      { transform: translateX(-50%) rotate(0.3deg); }
+  }
+
+  .hair .main {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 110px;
+    height: 46px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,200,140,.22), transparent 55%),
+      linear-gradient(165deg, #5a3a22 0%, #533e20 50%, #1f1209 100%);
+    border-radius: 70px 70px 42% 42% / 85px 85px 42% 42%;
+    box-shadow:
+      inset -8px -10px 20px rgba(0,0,0,.55),
+      inset 6px 8px 14px rgba(255,200,140,.12),
+      0 6px 16px rgba(0,0,0,.45);
+  }
+
+  /* ---------------- ТУЛОВИЩЕ ---------------- */
+  .torso-wrapper {
+    position: relative;
+    width: 170px;
+    height: 175px;
+    margin-top: -30px;
+    z-index: 2;
+  }
+
+  .torso {
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.25), transparent 55%),
+      linear-gradient(160deg, #5aa9e6, #2b6cb0 70%, #1f4e79);
+    border-radius: 40px 40px 25px 25px;
+    box-shadow:
+      inset -12px -10px 24px rgba(0,0,0,.3),
+      inset 6px 6px 14px rgba(255,255,255,.15),
+      0 8px 25px rgba(0,0,0,.4);
+    position: relative;
+    transform-origin: center center;
+  }
+
+  .torso::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 26px;
+    background: linear-gradient(180deg, #2b6cb0, #1f4e79);
+    border-radius: 0 0 30px 30px;
+    box-shadow: inset 0 -3px 6px rgba(0,0,0,.25);
+  }
+
+  .torso::after {
+    content: '';
+    position: absolute;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 4px;
+    background: rgba(255,255,255,.25);
+    border-radius: 4px;
+  }
+
+  /* ---------------- РУКИ ---------------- */
+  .arm {
+    position: absolute;
+    width: 34px;
+    height: 175px;
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.2) 0%, transparent 25%),
+      linear-gradient(160deg, #5aa9e6, #2b6cb0);
+    border-radius: 20px;
+    top: 6px;
+    box-shadow:
+      inset -6px -6px 14px rgba(0,0,0,.25),
+      inset 4px 4px 8px rgba(255,255,255,.15),
+      0 6px 18px rgba(0,0,0,.35);
+    transform-origin: top center;
+  }
+
+  .arm.left  { left: -30px;  transform: rotate(8deg); }
+  .arm.right { right: -30px; transform: rotate(-8deg); }
+
+  /* ---------------- ЛАДОНИ ---------------- */
+  .hand {
+    position: absolute;
+    bottom: -42px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 42px;
+    height: 48px;
+    z-index: 3;
+  }
+
+  .hand svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,.25));
+    transform: rotate(180deg);
+  }
+
+  .hand.left svg {
+    transform: rotate(180deg) scaleX(-1);
+  }
+
+  /* ---------------- НОГИ ---------------- */
+  .legs-wrapper {
+    position: relative;
+    width: 150px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: -18px;
+    z-index: 1;
+  }
+
+  .leg {
+    width: 46px;
+    height: 155px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 20%),
+      linear-gradient(180deg, #3a5a8a 0%, #2b4a7a 40%, #16253f 100%);
+    border-radius: 18px 18px 14px 14px;
+    box-shadow:
+      inset -6px -6px 14px rgba(0,0,0,.35),
+      inset 4px 4px 8px rgba(255,255,255,.08),
+      0 6px 18px rgba(0,0,0,.35);
+    position: relative;
+    transform-origin: top center;
+  }
+
+  .leg.left  { margin-left: 22px; transform: rotate(3deg); }
+  .leg.right { margin-right: 22px; transform: rotate(-3deg); }
+
+  .leg::after {
+    content: '';
+    position: absolute;
+    bottom: 18px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0,0,0,.3);
+    box-shadow: 0 2px 4px rgba(0,0,0,.4);
+  }
+
+  .shoe {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 58px;
+    height: 26px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.15), transparent 50%),
+      linear-gradient(180deg, #2a2a2a, #0a0a0a);
+    border-radius: 14px 14px 8px 8px;
+    box-shadow: 0 5px 12px rgba(0,0,0,.7), inset 0 -3px 4px rgba(0,0,0,.6);
+  }
+
+  .shoe::before {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(180deg, #555, #222);
+    border-radius: 0 0 8px 8px;
+  }
+
+  .shoe::after {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 10px;
+    background:
+      repeating-linear-gradient(0deg,
+        transparent 0 2px,
+        rgba(255,255,255,.7) 2px 3px,
+        transparent 3px 5px);
+    border-radius: 3px;
+  }
+
+  /* ---------------- ТАБЛИЧКА С ПОЗДРАВЛЕНИЕМ ---------------- */
+  .greeting {
+    position: absolute;
+    left: 50%;
+    bottom: 110px;
+    transform: translateX(-50%) translateY(30px) scale(0.5);
+    opacity: 0;
+    z-index: 30;
+    width: 250px;
+    padding: 12px 16px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,200,140,.25), transparent 60%),
+      linear-gradient(145deg, #3a2a12 0%, #5a3f1f 50%, #2b1d0a 100%);
+    border: 2px solid #d4a15a;
+    border-radius: 14px;
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.6),
+      inset 0 0 20px rgba(255,200,140,.15),
+      0 0 30px rgba(212,161,90,.35);
+    color: #ffe8c2;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .4px;
+    line-height: 1.35;
+    pointer-events: none;
+    transition: opacity .8s ease, transform 1s cubic-bezier(.2,.9,.3,1.3);
+  }
+
+  .greeting::before,
+  .greeting::after {
+    content: '🎓';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.5));
+  }
+  .greeting::before { left: 8px; }
+  .greeting::after  { right: 8px; }
+
+  .greeting.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    animation: greetingSway 3.5s ease-in-out infinite 1s;
+  }
+
+  @keyframes greetingSway {
+    0%, 100% { transform: translateX(-50%) translateY(0) scale(1) rotate(-0.6deg); }
+    50%      { transform: translateX(-50%) translateY(0) scale(1) rotate(0.6deg); }
+  }
+
+  /* ---------------- СЕРДЦЕ ---------------- */
+  .heart {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 130px;
+    height: 130px;
+    opacity: 0;
+    z-index: 20;
+    pointer-events: none;
+    transition: opacity .5s ease;
+  }
+
+  .heart.show {
+    animation: heartPop 1.4s cubic-bezier(.2,.9,.3,1.5) forwards;
+  }
+
+  .heart.vanish {
+    animation: heartVanish 0.7s ease forwards;
+  }
+
+  @keyframes heartPop {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(-25deg); opacity: 0; }
+    45%  { transform: translate(-50%,-50%) scale(1.35) rotate(8deg); opacity: 1; }
+    65%  { transform: translate(-50%,-50%) scale(0.95) rotate(-4deg); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1) rotate(0); opacity: 1; }
+  }
+
+  @keyframes heartVanish {
+    0%   { transform: translate(-50%,-50%) scale(1) rotate(0); opacity: 1; }
+    40%  { transform: translate(-50%,-50%) scale(1.25) rotate(6deg); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(0) rotate(-30deg); opacity: 0; }
+  }
+
+  .heart svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 22px rgba(255, 60, 110, .85));
+    animation: heartbeat 1.15s ease-in-out infinite;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    18%      { transform: scale(1.14); }
+    32%      { transform: scale(1); }
+    46%      { transform: scale(1.1); }
+    60%      { transform: scale(1); }
+  }
+
+  #confettiCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    display: none;
+  }
+
+  .hint {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    opacity: .6;
+    letter-spacing: .8px;
+    text-align: center;
+    line-height: 1.5;
+    pointer-events: none;
+  }
+  .hint b { color: #ffd166; }
+</style>
+</head>
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<!-- ============================================================
+     ЗАСТАВКА «В ЭФИРЕ / А ВЫ ЗНАЛИ, ЧТО»
+     ============================================================ -->
+<div class="intro" id="intro">
+  <div class="intro__label shine-text">В эфире</div>
+  <div class="intro__title shine-text">А вы знали, что</div>
+  <div class="intro__pulse"></div>
+</div>
+
+<div class="hint">
+  Разобрать: <b>1</b> волосы · <b>2</b> руки · <b>3</b> голова · <b>4</b> ноги · <b>5</b> туловище<br>
+  Собрать (после полного разбора): <b>5</b> ноги · <b>4</b> туловище · <b>3</b> руки · <b>2</b> причёска · <b>1</b> голова
+</div>
+
+<div class="stage">
+  <div class="person" id="person">
+
+    <div class="head-wrapper" id="headWrapper">
+      <div class="neck" id="neck"></div>
+
+      <div class="hair part" id="hair">
+        <div class="main"></div>
+        <div class="top-lock"></div>
+        <div class="fringe"></div>
+      </div>
+
+      <div class="head part" id="head">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="brow left"></div>
+        <div class="brow right"></div>
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="nose"></div>
+        <div class="blush left"></div>
+        <div class="blush right"></div>
+        <div class="mouth"></div>
+      </div>
+    </div>
+
+    <div class="torso-wrapper">
+      <div class="arm left part" id="armLeft">
+        <div class="hand left">
+          <svg viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="handGradL" cx="40%" cy="30%" r="75%">
+                <stop offset="0%"  stop-color="#ffd9b3"/>
+                <stop offset="100%" stop-color="#d99868"/>
+              </radialGradient>
+            </defs>
+            <rect x="4" y="14" width="32" height="28" rx="12" ry="12" fill="url(#handGradL)"/>
+            <rect x="7"  y="4" width="6" height="16" rx="3" fill="url(#handGradL)"/>
+            <rect x="14" y="2" width="6" height="18" rx="3" fill="url(#handGradL)"/>
+            <rect x="21" y="2" width="6" height="18" rx="3" fill="url(#handGradL)"/>
+            <rect x="28" y="4" width="6" height="16" rx="3" fill="url(#handGradL)"/>
+            <rect x="0" y="22" width="7" height="12" rx="3.5" fill="url(#handGradL)" transform="rotate(-25 3.5 28)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="torso part" id="torso"></div>
+
+      <div class="arm right part" id="armRight">
+        <div class="hand right">
+          <svg viewBox="0 0 40 48" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="handGradR" cx="40%" cy="30%" r="75%">
+                <stop offset="0%"  stop-color="#ffd9b3"/>
+                <stop offset="100%" stop-color="#d99868"/>
+              </radialGradient>
+            </defs>
+            <rect x="4" y="14" width="32" height="28" rx="12" ry="12" fill="url(#handGradR)"/>
+            <rect x="7"  y="4" width="6" height="16" rx="3" fill="url(#handGradR)"/>
+            <rect x="14" y="2" width="6" height="18" rx="3" fill="url(#handGradR)"/>
+            <rect x="21" y="2" width="6" height="18" rx="3" fill="url(#handGradR)"/>
+            <rect x="28" y="4" width="6" height="16" rx="3" fill="url(#handGradR)"/>
+            <rect x="0" y="22" width="7" height="12" rx="3.5" fill="url(#handGradR)" transform="rotate(-25 3.5 28)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="legs-wrapper">
+      <div class="leg left part" id="legLeft">
+        <div class="shoe"></div>
+      </div>
+      <div class="leg right part" id="legRight">
+        <div class="shoe"></div>
+      </div>
+    </div>
+
+    <div class="greeting" id="greeting">
+      🎓 С профессиональным праздником,<br>уважаемые преподаватели! 🎓
+    </div>
+
+  </div>
+
+  <div class="heart" id="heart">
+    <svg viewBox="0 0 100 100">
+      <defs>
+        <radialGradient id="hg" cx="35%" cy="30%" r="75%">
+          <stop offset="0%"  stop-color="#ff9bb3"/>
+          <stop offset="45%" stop-color="#ff3d68"/>
+          <stop offset="100%" stop-color="#a4002a"/>
+        </radialGradient>
+      </defs>
+      <path d="M50 88
+               C 20 66, 4 48, 4 30
+               C 4 14, 16 4, 30 4
+               C 40 4, 47 10, 50 18
+               C 53 10, 60 4, 70 4
+               C 84 4, 96 14, 96 30
+               C 96 48, 80 66, 50 88 Z"
+            fill="url(#hg)"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+  /* ============================================================
+     ЗАСТАВКА — скрытие по клику
+     ============================================================ */
+  const intro = document.getElementById('intro');
+  let introVisible = true;
+
+  function hideIntro() {
+    if (!introVisible) return;
+    introVisible = false;
+    intro.classList.add('hide');
+    setTimeout(() => {
+      intro.style.display = 'none';
+    }, 850);
+  }
+
+  intro.addEventListener('click', hideIntro);
+
+  /* ============================================================
+     СОСТОЯНИЕ
+     ============================================================ */
+  const removed = { head:false, hair:false, arms:false, legs:false, torso:false };
+  let mode = 'hide';
+
+  const els = {
+    head:  [document.getElementById('head')],
+    neck:  [document.getElementById('neck')],
+    hair:  [document.getElementById('hair')],
+    arms:  [document.getElementById('armLeft'), document.getElementById('armRight')],
+    legs:  [document.getElementById('legLeft'), document.getElementById('legRight')],
+    torso: [document.getElementById('torso')],
+  };
+
+  const heart    = document.getElementById('heart');
+  const greeting = document.getElementById('greeting');
+
+  function isFullyHidden() {
+    return Object.values(removed).every(v => v === true);
+  }
+  function isFullyAssembled() {
+    return Object.values(removed).every(v => v === false);
+  }
+
+  function removePart(action) {
+    if (removed[action]) return;
+    hideGreeting();
+
+    els[action].forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.remove('returning');
+        el.classList.add('hidden-part');
+      }, i * 90);
+    });
+
+    if (action === 'head') {
+      setTimeout(() => {
+        els.neck[0].classList.remove('returning');
+        els.neck[0].classList.add('hidden-neck');
+      }, 150);
+    }
+
+    removed[action] = true;
+
+    if (isFullyHidden()) {
+      mode = 'build';
+      setTimeout(showHeart, 500);
+    }
+  }
+
+  function returnPart(action) {
+    if (!removed[action]) return;
+
+    animateReturn(action, 0);
+    removed[action] = false;
+
+    if (!isFullyHidden()) hideHeart();
+
+    if (isFullyAssembled()) {
+      mode = 'hide';
+      setTimeout(() => {
+        showGreeting();
+        startConfetti();
+      }, 900);
+    }
+  }
+
+  function animateReturn(action, baseDelay) {
+    els[action].forEach((el, i) => {
+      setTimeout(() => {
+        el.classList.remove('hidden-part');
+        el.classList.remove('returning');
+        void el.offsetWidth;
+        el.classList.add('returning');
+        setTimeout(() => el.classList.remove('returning'), 950);
+      }, baseDelay + i * 90);
+    });
+
+    if (action === 'head') {
+      setTimeout(() => {
+        const neck = els.neck[0];
+        neck.classList.remove('hidden-neck');
+        neck.classList.remove('returning');
+        void neck.offsetWidth;
+        neck.classList.add('returning');
+        setTimeout(() => neck.classList.remove('returning'), 950);
+      }, baseDelay + 150);
+    }
+  }
+
+  /* ============================================================
+     КЛАВИАТУРА
+     ============================================================ */
+  const removeKeys = {
+    '1':'hair', '2':'arms', '3':'head', '4':'legs', '5':'torso',
+    'Numpad1':'hair', 'Numpad2':'arms', 'Numpad3':'head',
+    'Numpad4':'legs', 'Numpad5':'torso'
+  };
+  const buildKeys = {
+    '5':'legs', '4':'torso', '3':'arms', '2':'hair', '1':'head',
+    'Numpad5':'legs', 'Numpad4':'torso', 'Numpad3':'arms',
+    'Numpad2':'hair', 'Numpad1':'head'
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+    const code = e.code;
+    const key  = e.key;
+
+    if (
+      key === 'ё' || key === 'Ё' ||
+      key === '`' || key === '~' ||
+      code === 'Backquote'
+    ) {
+      if (introVisible) {
+        e.preventDefault();
+        hideIntro();
+        return;
+      }
+    }
+
+    if (key === 'i' || key === 'I' || key === 'ш' || key === 'Ш' || code === 'KeyI') {
+      e.preventDefault();
+      toggleFullscreen();
+      return;
+    }
+
+    if (introVisible) return;
+
+    if (mode === 'build') {
+      const action = buildKeys[key] || buildKeys[code];
+      if (!action) return;
+      e.preventDefault();
+      returnPart(action);
+    } else {
+      const action = removeKeys[key] || removeKeys[code];
+      if (!action) return;
+      e.preventDefault();
+      removePart(action);
+    }
+  });
+
+  /* ============================================================
+     ПОЛНОЭКРАННЫЙ РЕЖИМ
+     ============================================================ */
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  /* ============================================================
+     СЕРДЦЕ
+     ============================================================ */
+  function showHeart() {
+    if (heart.classList.contains('show')) return;
+    heart.classList.remove('vanish');
+    void heart.offsetWidth;
+    heart.classList.add('show');
+  }
+  function hideHeart() {
+    if (!heart.classList.contains('show')) return;
+    heart.classList.remove('show');
+    heart.classList.remove('vanish');
+    void heart.offsetWidth;
+    heart.classList.add('vanish');
+    setTimeout(() => heart.classList.remove('vanish'), 700);
+  }
+
+  /* ============================================================
+     ТАБЛИЧКА
+     ============================================================ */
+  function showGreeting() {
+    greeting.classList.remove('show');
+    void greeting.offsetWidth;
+    setTimeout(() => greeting.classList.add('show'), 200);
+  }
+  function hideGreeting() {
+    greeting.classList.remove('show');
+  }
+
+  /* ============================================================
+     КОНФЕТТИ
+     ============================================================ */
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const confettiCtx = confettiCanvas.getContext('2d');
+  let confettiParticles = [];
+  let confettiAnimationId = null;
+  let confettiActive = false;
+
+  function resizeConfettiCanvas() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeConfettiCanvas);
+  resizeConfettiCanvas();
+
+  function randomRange(min, max) { return Math.random() * (max - min) + min; }
+
+  const confettiColors = [
+    '#ff3d68', '#ffd166', '#06d6a0', '#118ab2',
+    '#ef476f', '#f78c6b', '#a06cd5', '#4cc9f0',
+    '#f72585', '#ffbe0b', '#3a86ff', '#8338ec'
+  ];
+
+  function createConfettiParticle() {
+    const fromLeft = Math.random() < 0.5;
+    return {
+      x: fromLeft ? randomRange(-40, 0) : randomRange(window.innerWidth, window.innerWidth + 40),
+      y: randomRange(-40, window.innerHeight * 0.35),
+      vx: fromLeft ? randomRange(2.5, 6.5) : randomRange(-6.5, -2.5),
+      vy: randomRange(1.5, 4.5),
+      size: randomRange(5, 12),
+      color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+      rotation: randomRange(0, Math.PI * 2),
+      rotationSpeed: randomRange(-0.18, 0.18),
+      shape: Math.random() < 0.35 ? 'circle' : 'rect',
+      sway: randomRange(0.4, 1.4),
+      swayPhase: randomRange(0, Math.PI * 2),
+      life: 0,
+      maxLife: randomRange(280, 420)
+    };
+  }
+
+  function startConfetti() {
+    if (confettiActive) return;
+    confettiActive = true;
+    confettiCanvas.style.display = 'block';
+    resizeConfettiCanvas();
+    confettiParticles = [];
+    for (let i = 0; i < 260; i++) confettiParticles.push(createConfettiParticle());
+    cancelAnimationFrame(confettiAnimationId);
+    animateConfetti();
+  }
+
+  function animateConfetti() {
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
+    for (let i = confettiParticles.length - 1; i >= 0; i--) {
+      const p = confettiParticles[i];
+
+      p.life++;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.045;
+      p.x += Math.sin(p.life * 0.045 + p.swayPhase) * p.sway * 0.35;
+      p.rotation += p.rotationSpeed;
+      p.vx *= 0.995;
+
+      if (p.life > 60 && confettiParticles.length < 420 && Math.random() < 0.08) {
+        confettiParticles.push(createConfettiParticle());
+      }
+
+      const alpha = p.life < 30
+        ? p.life / 30
+        : Math.max(0, 1 - (p.life - 30) / (p.maxLife - 30));
+
+      confettiCtx.save();
+      confettiCtx.globalAlpha = Math.min(1, alpha);
+      confettiCtx.translate(p.x, p.y);
+      confettiCtx.rotate(p.rotation);
+      confettiCtx.fillStyle = p.color;
+
+      if (p.shape === 'circle') {
+        confettiCtx.beginPath();
+        confettiCtx.arc(0, 0, p.size * 0.5, 0, Math.PI * 2);
+        confettiCtx.fill();
+      } else {
+        confettiCtx.fillRect(-p.size * 0.5, -p.size * 0.25, p.size, p.size * 0.55);
+      }
+
+      confettiCtx.restore();
+
+      if (
+        p.life > p.maxLife ||
+        p.y > window.innerHeight + 80 ||
+        p.x < -120 ||
+        p.x > window.innerWidth + 120
+      ) {
+        confettiParticles.splice(i, 1);
+      }
+    }
+
+    if (confettiParticles.length > 0) {
+      confettiAnimationId = requestAnimationFrame(animateConfetti);
+    } else {
+      confettiActive = false;
+      confettiCanvas.style.display = 'none';
+      confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    }
+  }
+</script>
+
+</body>
+</html>
